@@ -41,9 +41,14 @@ public class WebSecurityConfiguration {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/authenticate", "/registerNewUser","/user").permitAll()
+                        .requestMatchers("/api/authenticate", "/api/registerNewUser").permitAll()
+                        .requestMatchers("/user").permitAll()
                         .requestMatchers(HttpHeaders.ALLOW).permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/user", true) // Chuyển hướng đến /index.html sau khi xác thực thành công
+                        .failureUrl("/login?error=true") // Chuyển hướng đến /login?error=true nếu xác thực thất bại
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -51,9 +56,7 @@ public class WebSecurityConfiguration {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-//                .oauth2Login(oauth2 -> oauth2
-//                        .defaultSuccessUrl("/user", true)
-//                )
+
                 ;
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

@@ -10,7 +10,7 @@ public class RoleResource {
     @Autowired
     private RoleService roleService;
 
-    @PostMapping({"/createNewRole"})
+    @PostMapping({"/api/createNewRole"})
     public Role createNewRole(@RequestBody Role role) {
         return roleService.createNewRole(role);
     }

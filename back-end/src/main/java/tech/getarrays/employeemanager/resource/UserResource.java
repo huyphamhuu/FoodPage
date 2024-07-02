@@ -21,18 +21,18 @@ public class UserResource {
         userService.initRoleAndUser();
     }
 
-    @PostMapping({"/registerNewUser"})
+    @PostMapping({"/api/registerNewUser"})
     public Users registerNewUser(@RequestBody Users user) {
         return userService.registerNewUser(user);
     }
 
-    @GetMapping({"/forAdmin"})
+    @GetMapping({"/api/forAdmin"})
     @PreAuthorize("hasRole('Admin')")
     public String forAdmin(){
         return "This URL is only accessible to the admin";
     }
 
-    @GetMapping({"/forUser"})
+    @GetMapping({"/api/forUser"})
     @PreAuthorize("hasRole('User')")
     public String forUser(){
         return "This URL is only accessible to the user";

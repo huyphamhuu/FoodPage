@@ -30,7 +30,18 @@ public class JWTRequestFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+//        String path = request.getRequestURI();
+//        if ("/user".equals(path)) {
+//            System.out.println("can we out");
+//            filterChain.doFilter(request, response);
+//
+//            return;
+//        }
+        String path = request.getRequestURI();
 
+        if ("/user".equals(path)) {
+            filterChain.doFilter(request, response);
+            }
         final String requestTokenHeader = request.getHeader("Authorization");
 
         String username = null;
