@@ -8,6 +8,7 @@ public class Users {
     private String userFirstName;
     private String userLastName;
     private String userPassword;
+    private Boolean enabled = false;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE",
             joinColumns = {
@@ -53,6 +54,14 @@ public class Users {
 
     public Set<Role> getRole() {
         return role;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setRole(Set<Role> role) {

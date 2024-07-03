@@ -1,16 +1,23 @@
 package tech.getarrays.employeemanager.service;
 
+import lombok.AllArgsConstructor;
 import tech.getarrays.employeemanager.repo.RoleDao;
 import tech.getarrays.employeemanager.repo.UserDao;
 import tech.getarrays.employeemanager.model.Role;
 import tech.getarrays.employeemanager.model.Users;
+import tech.getarrays.employeemanager.resource.UserResource;
+import tech.getarrays.employeemanager.service.ConfirmationTokenService;
+import tech.getarrays.employeemanager.model.ConfirmationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.Optional;
+import java.util.UUID;
 @Service
 public class UserService {
     @Autowired
@@ -21,6 +28,11 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+
+    @Autowired
+    private  ConfirmationTokenService confirmationTokenService;
+
     public void initRoleAndUser() {
 
         Role adminRole = new Role();
@@ -52,18 +64,57 @@ public class UserService {
 //        user.setRole(userRoles);
 //        userDao.save(user);
     }
+    @Transactional
+    public String confirmToken(String token){
+        System.out.println(token);
+        ConfirmationToken confirmationToken = confirmationTokenService
+                .getToken(token)
+                .orElseThrow(() ->
+                        new IllegalStateException("token not found"));
+        if(confirmationToken.getConfirmedAt()!=null){
+            throw new IllegalStateException("email already confirmed");
 
-    public Users registerNewUser(Users user) {
+        }
+        LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+        if (expiredAt.isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("token expired");
+        }
+        confirmationTokenService.setConfirmedAt(token);
+        enableAppUser(
+                confirmationToken.getAppUser().getUserName());
+        return "confirmed";
+    }
+    public ConfirmationToken registerNewUser(Users user) {
+        Optional<Users> existingUser = userDao.findByUserName(user.getUserName());
+        if (existingUser.isPresent()) {
+           throw new RuntimeException("Email already registered");
+        }
+
         Role role = roleDao.findById("User").get();
         Set<Role> userRoles = new HashSet<>();
         userRoles.add(role);
         user.setRole(userRoles);
         user.setUserPassword(getEncodedPassword(user.getUserPassword()));
 
-        return userDao.save(user);
+        String token = UUID.randomUUID().toString();
+        userDao.save(user);
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+                token,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(15),
+                user
+        );
+        confirmationTokenService.saveConfirmationToken(confirmationToken);
+        //return userDao.save(user);
+
+        return confirmationToken;
     }
 
     public String getEncodedPassword(String password) {
         return passwordEncoder.encode(password);
     }
+    public int enableAppUser(String email){
+        return userDao.enableAppUser(email);
+    }
+
 }

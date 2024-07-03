@@ -37,6 +37,7 @@ public class JWTRequestFilter extends OncePerRequestFilter {
 //
 //            return;
 //        }
+        System.out.println("Get in request filter");
         String path = request.getRequestURI();
 
         if ("/user".equals(path)) {

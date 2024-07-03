@@ -37,19 +37,21 @@ public class WebSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("Unable to get JWT Token");
         http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/authenticate", "/api/registerNewUser").permitAll()
+                        .requestMatchers("/confirm", "/confirm/**").permitAll()
                         .requestMatchers("/user").permitAll()
                         .requestMatchers(HttpHeaders.ALLOW).permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/user", true) // Chuyển hướng đến /index.html sau khi xác thực thành công
-                        .failureUrl("/login?error=true") // Chuyển hướng đến /login?error=true nếu xác thực thất bại
-                )
+//                .oauth2Login(oauth2 -> oauth2
+//                        .defaultSuccessUrl("/user", true) // Chuyển hướng đến /index.html sau khi xác thực thành công
+//                        .failureUrl("/login?error=true") // Chuyển hướng đến /login?error=true nếu xác thực thất bại
+//                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
